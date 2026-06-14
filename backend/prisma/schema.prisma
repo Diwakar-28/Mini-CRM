@@ -1,0 +1,86 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Customer {
+  id             String              @id @default(uuid())
+  name           String
+  email          String              @unique
+  phone          String
+  city           String
+  tags           String              // Stored as JSON string or comma-separated for SQLite compatibility
+  totalSpend     Float               @default(0.0)
+  totalOrders    Int                 @default(0)
+  lastOrderDate  DateTime?
+  createdAt      DateTime            @default(now())
+  orders         Order[]
+  recipients     CampaignRecipient[]
+}
+
+model Order {
+  id             String              @id @default(uuid())
+  customerId     String
+  customer       Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orderValue     Float
+  items          String              // JSON string representation of [{name, qty, price}]
+  orderDate      DateTime
+  status         String              // placed, fulfilled, cancelled
+}
+
+model Segment {
+  id                   String        @id @default(uuid())
+  name                 String
+  description          String
+  rulesJson            String        // JSON structure containing filtering conditions
+  naturalLanguageQuery String?
+  createdBy            String        @default("ai") // ai or manual
+  createdAt            DateTime      @default(now())
+  campaigns            Campaign[]
+}
+
+model Campaign {
+  id              String              @id @default(uuid())
+  name            String
+  segmentId       String
+  segment         Segment             @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  channel         String              // email, sms, whatsapp, rcs
+  messageTemplate String
+  aiGenerated     Boolean             @default(true)
+  aiReasoning     String?
+  status          String              // draft, queued, sending, completed, failed
+  createdAt       DateTime            @default(now())
+  launchedAt      DateTime?
+  recipients      CampaignRecipient[]
+}
+
+model CampaignRecipient {
+  id                  String               @id @default(uuid())
+  campaignId          String
+  campaign            Campaign             @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  customerId          String
+  customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  personalizedMessage String
+  status              String               @default("pending") // pending, sent, delivered, failed, opened, read, clicked
+  sentAt              DateTime?
+  deliveredAt         DateTime?
+  openedAt            DateTime?
+  clickedAt           DateTime?
+  failureReason       String?
+  retryCount          Int                  @default(0)
+  events              CommunicationEvent[]
+  @@unique([campaignId, customerId])
+}
+
+model CommunicationEvent {
+  id                  String            @id @default(uuid())
+  campaignRecipientId String
+  recipient           CampaignRecipient @relation(fields: [campaignRecipientId], references: [id], onDelete: Cascade)
+  eventType           String            // sent, delivered, failed, opened, read, clicked
+  metadata            String?           // JSON string of event metadata
+  occurredAt          DateTime          @default(now())
+}
