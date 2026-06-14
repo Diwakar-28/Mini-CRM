@@ -12,7 +12,7 @@
     "dev:frontend": "npm run dev -w frontend",
     "dev:channel": "npm run dev -w channel-service",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:channel\" \"npm run dev:frontend\"",
-    "build": "npm run build --workspaces",
+    "build": "npm run build -w shared && npm run build --workspaces",
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend"
   },

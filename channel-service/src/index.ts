@@ -145,12 +145,12 @@ app.post('/send', (req, res) => {
 });
 
 // Logs Endpoint
-app.get('/logs', (res) => {
+app.get('/logs', (req, res) => {
   res.json(messageLog);
 });
 
 // Health check endpoint
-app.get('/health', (res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'Xeno Message Delivery Simulator' });
 });
 
