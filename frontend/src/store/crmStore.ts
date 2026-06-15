@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import apiClient from '../api/apiClient';
-import { ChatMessage, Segment } from '@xeno/shared';
+import { ChatMessage, Segment } from '../types';
 
 interface CRMState {
   // Chat
